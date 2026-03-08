@@ -307,6 +307,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- الهاش: $2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm
 -- ============================================================
 
+-- تأكيد اختيار قاعدة البيانات (مهم لـ MySQL Workbench)
+USE `trusted_social_network_platform`;
+
 -- ─────────────────────────────────────────────────────────────
 -- مستخدمو النظام
 -- ─────────────────────────────────────────────────────────────
@@ -372,124 +375,120 @@ ON DUPLICATE KEY UPDATE
 -- ─────────────────────────────────────────────────────────────
 -- مجموعات تجريبية
 -- ─────────────────────────────────────────────────────────────
-USE `trusted_social_network_platform`;
+INSERT INTO `groups`
+    (`group_name`, `description`, `type`, `privacy`, `created_by`, `members_count`)
+VALUES
+(   'مقرر هياكل البيانات',
+    'مجموعة طلاب مقرر هياكل البيانات — الفصل الأول 2024',
+    'course', 'private',
+    (SELECT user_id FROM users WHERE username = 'professor01' LIMIT 1), 3),
 
-INSERT INTO `groups` (`group_name`, `description`, `type`, `privacy`, `created_by`, `members_count`)
-SELECT 'مقرر هياكل البيانات', 'مجموعة طلاب مقرر هياكل البيانات — الفصل الأول 2024',
-       'course', 'private', user_id, 3
-FROM users WHERE username = 'professor01' LIMIT 1;
+(   'قسم علوم الحاسوب',
+    'مجموعة عامة لطلاب وأعضاء هيئة التدريس في القسم',
+    'department', 'restricted',
+    (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1), 5),
 
-INSERT INTO `groups` (`group_name`, `description`, `type`, `privacy`, `created_by`, `members_count`)
-SELECT 'قسم علوم الحاسوب', 'مجموعة عامة لطلاب وأعضاء هيئة التدريس في القسم',
-       'department', 'restricted', user_id, 5
-FROM users WHERE username = 'admin' LIMIT 1;
+(   'نادي البرمجة',
+    'نادي البرمجة الجامعي — أنشطة وورش عمل',
+    'activity', 'public',
+    (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1), 2)
 
-INSERT INTO `groups` (`group_name`, `description`, `type`, `privacy`, `created_by`, `members_count`)
-SELECT 'نادي البرمجة', 'نادي البرمجة الجامعي — أنشطة وورش عمل',
-       'activity', 'public', user_id, 2
-FROM users WHERE username = 'supervisor01' LIMIT 1;
+ON DUPLICATE KEY UPDATE `updated_at` = NOW();
 
 -- ─────────────────────────────────────────────────────────────
 -- منشورات تجريبية
 -- ─────────────────────────────────────────────────────────────
-USE `trusted_social_network_platform`;
+INSERT INTO `posts`
+    (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
+VALUES
+(   (SELECT user_id FROM users WHERE username = 'professor01' LIMIT 1),
+    (SELECT group_id FROM `groups` WHERE group_name = 'مقرر هياكل البيانات' LIMIT 1),
+    'الاختبار الأول سيكون يوم الأحد القادم، راجعوا فصول 1 إلى 4 من الكتاب المقرر.',
+    'announcement', 'group', 12, 5),
 
-INSERT INTO `posts` (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
-SELECT u.user_id, g.group_id,
-       'الاختبار الأول سيكون يوم الأحد القادم، راجعوا فصول 1 إلى 4 من الكتاب المقرر.',
-       'announcement', 'group', 12, 5
-FROM users u, `groups` g
-WHERE u.username = 'professor01' AND g.group_name = 'مقرر هياكل البيانات'
-LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'student01' LIMIT 1),
+    NULL,
+    'هل من يستطيع مساعدتي في فهم خوارزمية Dijkstra؟',
+    'question', 'public', 3, 8),
 
-INSERT INTO `posts` (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
-SELECT user_id, NULL,
-       'هل من يستطيع مساعدتي في فهم خوارزمية Dijkstra؟',
-       'question', 'public', 3, 8
-FROM users WHERE username = 'student01' LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'professor02' LIMIT 1),
+    (SELECT group_id FROM `groups` WHERE group_name = 'قسم علوم الحاسوب' LIMIT 1),
+    'تذكير: آخر موعد لتسليم المشاريع هو نهاية الأسبوع القادم.',
+    'announcement', 'group', 20, 2),
 
-INSERT INTO `posts` (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
-SELECT u.user_id, g.group_id,
-       'تذكير: آخر موعد لتسليم المشاريع هو نهاية الأسبوع القادم.',
-       'announcement', 'group', 20, 2
-FROM users u, `groups` g
-WHERE u.username = 'professor02' AND g.group_name = 'قسم علوم الحاسوب'
-LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1),
+    NULL,
+    'مرحباً بكم جميعاً في منصة UniLink! نسعد بانضمامكم.',
+    'post', 'public', 45, 12),
 
-INSERT INTO `posts` (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
-SELECT user_id, NULL,
-       'مرحباً بكم جميعاً في منصة UniLink! نسعد بانضمامكم.',
-       'post', 'public', 45, 12
-FROM users WHERE username = 'admin' LIMIT 1;
-
-INSERT INTO `posts` (`user_id`, `group_id`, `content`, `type`, `visibility`, `likes_count`, `comments_count`)
-SELECT u.user_id, g.group_id,
-       'ورشة عمل JavaScript يوم الخميس الساعة 6 مساءً في قاعة التدريب.',
-       'announcement', 'group', 8, 3
-FROM users u, `groups` g
-WHERE u.username = 'student02' AND g.group_name = 'نادي البرمجة'
-LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'student02' LIMIT 1),
+    (SELECT group_id FROM `groups` WHERE group_name = 'نادي البرمجة' LIMIT 1),
+    'ورشة عمل JavaScript يوم الخميس الساعة 6 مساءً في قاعة التدريب.',
+    'announcement', 'group', 8, 3);
 
 -- ─────────────────────────────────────────────────────────────
 -- بلاغات تجريبية
 -- ─────────────────────────────────────────────────────────────
-USE `trusted_social_network_platform`;
-
-INSERT INTO `reports` (`reporter_id`, `post_id`, `reported_user_id`, `reason`, `details`, `status`, `handled_by`)
-SELECT
-    (SELECT user_id FROM users WHERE username = 'student01' LIMIT 1),
+INSERT INTO `reports`
+    (`reporter_id`, `post_id`, `reported_user_id`, `reason`, `details`, `status`, `handled_by`)
+VALUES
+(   (SELECT user_id FROM users WHERE username = 'student01' LIMIT 1),
     NULL,
     (SELECT user_id FROM users WHERE username = 'student_suspended' LIMIT 1),
-    'harassment', 'المستخدم يرسل رسائل مزعجة ومسيئة.', 'resolved',
-    (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1);
+    'harassment',
+    'المستخدم يرسل رسائل مزعجة ومسيئة.',
+    'resolved',
+    (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1)),
 
-INSERT INTO `reports` (`reporter_id`, `post_id`, `reported_user_id`, `reason`, `details`, `status`, `handled_by`)
-SELECT
+(   (SELECT user_id FROM users WHERE username = 'student02' LIMIT 1),
+    (SELECT post_id FROM posts LIMIT 1 OFFSET 1),
+    NULL,
+    'spam',
+    'هذا المنشور يحتوي على روابط دعائية غير مرخصة.',
+    'under_review',
+    (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1)),
+
+(   (SELECT user_id FROM users WHERE username = 'student03' LIMIT 1),
+    NULL,
     (SELECT user_id FROM users WHERE username = 'student02' LIMIT 1),
-    (SELECT post_id FROM posts ORDER BY post_id LIMIT 1 OFFSET 1),
-    NULL,
-    'spam', 'هذا المنشور يحتوي على روابط دعائية غير مرخصة.', 'under_review',
-    (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1);
+    'inappropriate_content',
+    'محتوى غير لائق في التعليقات.',
+    'pending',
+    NULL),
 
-INSERT INTO `reports` (`reporter_id`, `post_id`, `reported_user_id`, `reason`, `details`, `status`, `handled_by`)
-SELECT
-    (SELECT user_id FROM users WHERE username = 'student03' LIMIT 1),
+(   (SELECT user_id FROM users WHERE username = 'student01' LIMIT 1),
+    (SELECT post_id FROM posts LIMIT 1 OFFSET 0),
     NULL,
-    (SELECT user_id FROM users WHERE username = 'student02' LIMIT 1),
-    'inappropriate_content', 'محتوى غير لائق في التعليقات.', 'pending', NULL;
-
-INSERT INTO `reports` (`reporter_id`, `post_id`, `reported_user_id`, `reason`, `details`, `status`, `handled_by`)
-SELECT
-    (SELECT user_id FROM users WHERE username = 'student01' LIMIT 1),
-    (SELECT post_id FROM posts ORDER BY post_id LIMIT 1),
-    NULL,
-    'misinformation', 'معلومات خاطئة عن الاختبار القادم.', 'rejected',
-    (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1);
+    'misinformation',
+    'معلومات خاطئة عن الاختبار القادم.',
+    'rejected',
+    (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1));
 
 -- ─────────────────────────────────────────────────────────────
 -- سجلات نشاط تجريبية
 -- ─────────────────────────────────────────────────────────────
-USE `trusted_social_network_platform`;
-
 INSERT INTO `audit_logs` (`user_id`, `action`, `description`, `ip_address`)
-SELECT user_id, 'login', 'تسجيل دخول مدير النظام', '192.168.1.1'
-FROM users WHERE username = 'admin' LIMIT 1;
+VALUES
+(   (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1),
+    'login', 'تسجيل دخول مدير النظام', '192.168.1.1'),
 
-INSERT INTO `audit_logs` (`user_id`, `action`, `description`, `ip_address`)
-SELECT user_id, 'login', 'تسجيل دخول المشرف', '192.168.1.2'
-FROM users WHERE username = 'supervisor01' LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1),
+    'login', 'تسجيل دخول المشرف', '192.168.1.2'),
 
-INSERT INTO `audit_logs` (`user_id`, `action`, `description`, `ip_address`)
-SELECT user_id, 'account_suspend', 'تعليق حساب student_suspended بسبب مخالفة السياسات', '192.168.1.1'
-FROM users WHERE username = 'admin' LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1),
+    'account_suspend',
+    'تعليق حساب student_suspended بسبب مخالفة السياسات',
+    '192.168.1.1'),
 
-INSERT INTO `audit_logs` (`user_id`, `action`, `description`, `ip_address`)
-SELECT user_id, 'report_submit', 'تم معالجة بلاغ المضايقة وإغلاقه', '192.168.1.2'
-FROM users WHERE username = 'supervisor01' LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'supervisor01' LIMIT 1),
+    'report_submit',
+    'تم معالجة بلاغ المضايقة وإغلاقه',
+    '192.168.1.2'),
 
-INSERT INTO `audit_logs` (`user_id`, `action`, `description`, `ip_address`)
-SELECT user_id, 'register', 'اكتمل إعداد قاعدة البيانات بنجاح — النظام جاهز', '127.0.0.1'
-FROM users WHERE username = 'admin' LIMIT 1;
+(   (SELECT user_id FROM users WHERE username = 'admin' LIMIT 1),
+    'register',
+    'اكتمل إعداد قاعدة البيانات بنجاح — النظام جاهز',
+    '127.0.0.1');
 
 -- ============================================================
 -- ✅ تم الإعداد بنجاح!
