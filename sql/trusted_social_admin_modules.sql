@@ -1,4 +1,4 @@
-﻿SET FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 0;
 SET NAMES 'utf8mb4';
 
 CREATE DATABASE IF NOT EXISTS `trusted_social_network_platform` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
