@@ -180,14 +180,14 @@ CREATE TABLE IF NOT EXISTS `trusted_social_network_platform`.`audit_logs` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `trusted_social_network_platform`.`users` (`username`, `email`, `password_hash`, `role`, `full_name`, `academic_id`, `department`, `is_verified`, `status`) VALUES
-('admin',            'admin@unilink.local',      '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'admin',      'System Administrator', 'ADM-001',  'IT Department',      1, 'active'),
-('supervisor01',     'supervisor@unilink.local', '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'supervisor', 'Main Supervisor',      'SUP-001',  'Student Affairs',    1, 'active'),
-('professor01',      'professor@unilink.local',  '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'professor',  'Ahmed Khalid',         'FAC-301',  'Computer Science',   1, 'active'),
-('professor02',      'professor2@unilink.local', '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'professor',  'Lina Sami',            'FAC-302',  'Information Systems',1, 'active'),
-('student01',        'student@unilink.local',    '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'student',    'Rania Fahad',          'STU-2001', 'Computer Science',   1, 'active'),
-('student02',        'student2@unilink.local',   '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'student',    'Khalid Abdulrahman',   'STU-2002', 'Information Systems',1, 'active'),
-('student03',        'student3@unilink.local',   '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'student',    'Noor Ibrahim',         'STU-2003', 'Computer Science',   1, 'active'),
-('student_suspended','suspended@unilink.local',  '$2y$10$2RBv4yn8qw/EgaZA/p8yC.1QjML25TD7Qp4IA6gsrVot16G/ZV6Zm', 'student',    'Sara Ali',             'STU-2004', 'Computer Science',   1, 'suspended')
+('admin',            'admin@unilink.local',      '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'admin',      'System Administrator', 'ADM-001',  'IT Department',      1, 'active'),
+('supervisor01',     'supervisor@unilink.local', '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'supervisor', 'Main Supervisor',      'SUP-001',  'Student Affairs',    1, 'active'),
+('professor01',      'professor@unilink.local',  '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'professor',  'Ahmed Khalid',         'FAC-301',  'Computer Science',   1, 'active'),
+('professor02',      'professor2@unilink.local', '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'professor',  'Lina Sami',            'FAC-302',  'Information Systems',1, 'active'),
+('student01',        'student@unilink.local',    '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'student',    'Rania Fahad',          'STU-2001', 'Computer Science',   1, 'active'),
+('student02',        'student2@unilink.local',   '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'student',    'Khalid Abdulrahman',   'STU-2002', 'Information Systems',1, 'active'),
+('student03',        'student3@unilink.local',   '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'student',    'Noor Ibrahim',         'STU-2003', 'Computer Science',   1, 'active'),
+('student_suspended','suspended@unilink.local',  '$2y$10$3W/qLmgnzdpw7wQ54.o4EuZL6jfd6gW9IFQn1uv58r/H/DEnBvSZO', 'student',    'Sara Ali',             'STU-2004', 'Computer Science',   1, 'suspended')
 ON DUPLICATE KEY UPDATE `password_hash`=VALUES(`password_hash`), `role`=VALUES(`role`), `is_verified`=VALUES(`is_verified`), `status`=VALUES(`status`), `updated_at`=NOW();
 
 INSERT INTO `trusted_social_network_platform`.`groups` (`group_name`, `description`, `type`, `privacy`, `created_by`, `members_count`)
