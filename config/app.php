@@ -23,7 +23,7 @@ const APP_DIR       = 'rtl';
 // ── Amazon RDS ─────────────────────────────────────────────────────────────
 const DB_HOST = 'unilink-platform.c6pgq44asn04.us-east-1.rds.amazonaws.com';
 const DB_PORT = '3306';
-const DB_NAME = 'unilink_db';
+const DB_NAME = 'trusted_social_network_platform';
 const DB_USER = 'admin';
 const DB_PASS = 'meera999444';
 // ───────────────────────────────────────────────────────────────────────────

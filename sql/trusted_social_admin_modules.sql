@@ -1,5 +1,5 @@
 ﻿-- ============================================================
--- unilink_db — Full Setup Script
+-- trusted_social_network_platform — Full Setup Script
 -- المشروع: UniLink – Trusted Social Network Platform
 -- ============================================================
 -- كيفية الاستخدام:
@@ -16,11 +16,11 @@ SET time_zone = '+03:00';
 -- ─────────────────────────────────────────────────────────────
 -- إنشاء قاعدة البيانات
 -- ─────────────────────────────────────────────────────────────
-CREATE DATABASE IF NOT EXISTS `unilink_db`
+CREATE DATABASE IF NOT EXISTS `trusted_social_network_platform`
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE `unilink_db`;
+USE `trusted_social_network_platform`;
 
 -- ─────────────────────────────────────────────────────────────
 -- 1. جدول المستخدمين
