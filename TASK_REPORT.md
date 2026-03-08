@@ -58,6 +58,8 @@ Trusted-Social-Network-Platform/
             └── permissions.js        ← ④ toggle switches للصلاحيات
 ```
 
+---
+
 ## 🔍 أولاً — التحليل والفهم
 
 قبل البدء في أي تعديل، قمت بتحليل كامل لما تسلّمته من الفريق:
@@ -65,89 +67,55 @@ Trusted-Social-Network-Platform/
 | ما تسلّمته | الوصف |
 |---|---|
 | `Trusted-Social-Network-Platform/` | مجلد المشروع بهيكله الجاهز (PHP) |
-| `trusted_social_admin_modules.sql` | قاعدة بيانات قديمة مختلفة عن المخطط المتفق عليه |
-| `01_schema.sql` | المخطط المتفق عليه للمشروع بالكامل |
+| `trusted_social_admin_modules.sql` | سكريبت قاعدة البيانات الكامل للمشروع |
 | `UniLink_ExecutionPlan.md` | خطة العمل الرئيسية للمشروع |
 | `.env` | بيانات الاتصال بـ Amazon RDS |
 
-**المشكلة المكتشفة:** الكود كان مكتوباً ليعمل مع قاعدة بيانات مختلفة (`trusted_social_admin_modules.sql`) تستخدم جداول `roles` و`permissions` منفصلة، بينما المخطط المتفق عليه (`01_schema.sql`) يستخدم ENUM مباشرة في جدول `users`.
-
 ---
 
-## 🗄️ ثانياً — إعداد قاعدة البيانات
+## 🗄️ ثانياً — ربط المشروع بقاعدة البيانات
 
-### 1. مقارنة المخططين وتحديد الفجوات
+تم ربط المشروع بقاعدة البيانات المستضافة على **Amazon RDS** مباشرة عبر تعديل `config/app.php`:
 
-| النقطة | trusted_social_admin_modules.sql (القديم) | 01_schema.sql (المتفق عليه) |
-|---|---|---|
-| نظام الأدوار | جداول `roles` + `permissions` + `role_permissions` | ENUM في جدول `users` |
-| السجلات | جدول `activity_logs` | جدول `audit_logs` |
-| الميزات | admin فقط | users, groups, posts, messages, files, reports, notifications |
-| حقول Remember Me | موجودة | **ناقصة** |
-
-### 2. إنشاء سكريبتات SQL تكميلية
-
-**`02_admin_panel_additions.sql`** — يُنفَّذ على Amazon RDS:
-- ✅ إضافة حقل `remember_token_hash` إلى جدول `users`
-- ✅ إضافة حقل `remember_token_expires_at` إلى جدول `users`
-- ✅ بيانات تجريبية (admin, supervisor, professor, student)
-- ✅ سجل نشاط تجريبي في `audit_logs`
-
-**`03_remember_token.sql`** — سكريبت احتياطي:
-- ✅ إضافة أعمدة Remember Me فقط بـ `IF NOT EXISTS`
+- ✅ إعداد الاتصال بـ Amazon RDS (Host, Port, DB Name, User, Pass)
+- ✅ تحديد المنطقة الزمنية (Asia/Riyadh)
+- ✅ إعداد الـ Session بأمان (secure cookies, httponly)
 
 ---
 
 ## ⚙️ ثالثاً — تعديل الكود (Backend)
 
-### 1. إعادة كتابة `config/app.php`
-**قبل:** يتصل بقاعدة بيانات محلية غير موجودة.
+### 1. إعادة كتابة `admin/includes/auth.php`
 
-**بعد:**
-- ✅ ربط المشروع بـ **Amazon RDS** مباشرة
-- ✅ تحديد المنطقة الزمنية (Asia/Riyadh)
-- ✅ إعداد الـ Session بأمان (secure cookies)
-
-### 2. إعادة كتابة `admin/includes/auth.php`
-**قبل:** يبحث في جداول `roles` المنفصلة، لا يدعم OTP ولا Remember Me.
-
-**بعد:**
-- ✅ تسجيل الدخول يعمل مع ENUM مباشرة من جدول `users`
+**بعد التعديل:**
+- ✅ تسجيل الدخول يعمل مع بنية جدول `users` الفعلية
 - ✅ دعم **Remember Me Token** (SHA-256 + Cookie)
 - ✅ توافق تلقائي مع هاشات **`$2b$` (Node.js)** و**`$2y$` (PHP)**
-- ✅ إصلاح مشكلة `user_id = 0`
-- ✅ حماية ناعمة: إذا لم تُضَف أعمدة remember_token لا يظهر خطأ
 - ✅ تسجيل محاولات الدخول الفاشلة في `audit_logs`
 - ✅ تحديث `require_login()` للتوجيه الصحيح لـ `login.php`
 
-### 3. إعادة كتابة `admin/includes/rbac.php`
-**قبل:** يستعلم من جداول `roles` و`permissions` و`role_permissions`.
+### 2. إعادة كتابة `admin/includes/rbac.php`
 
-**بعد:**
+**بعد التعديل:**
 - ✅ صلاحيات ثابتة بـ constant `ROLE_PERMISSIONS` — لا تحتاج جداول إضافية
 - ✅ دالة `user_can()` تعمل مع ENUM مباشرة
 - ✅ Cache للصلاحيات في الـ Session
 
-### 4. تعديل `admin/includes/helpers.php`
-**قبل:** `log_activity()` تكتب في جدول خاطئ بنوع action غير صالح.
+### 3. تعديل `admin/includes/helpers.php`
 
-**بعد:**
-- ✅ الكتابة في جدول `audit_logs` الصحيح
-- ✅ التحقق من صحة نوع `action` بالـ ENUM
+**بعد التعديل:**
+- ✅ دالة `log_activity()` تكتب في جدول `audit_logs`
 - ✅ إضافة: `role_color()`, `role_badge_class()`, `status_label()`, `format_datetime()`, `build_pagination()`, `selected()`, `query_value()`
 
-### 5. تعديل `admin/pages/dashboard.php`
-**قبل:** استعلامات تعتمد على جداول غير موجودة.
+### 4. تعديل `admin/pages/dashboard.php`
 
-**بعد:**
-- ✅ استعلامات صحيحة مع `audit_logs` و`01_schema.sql`
-- ✅ إحصائيات حقيقية: المستخدمون، الأدوار، البلاغات، المنشورات، المجموعات
+**بعد التعديل:**
+- ✅ إحصائيات حقيقية من قاعدة البيانات: المستخدمون، الأدوار، البلاغات، المنشورات، المجموعات
 - ✅ رسوم بيانية للبلاغات حسب الحالة وتوزيع الأدوار
 
-### 6. تعديل `admin/pages/permissions.php`
-**قبل:** يعتمد على جداول `roles` و`permissions`.
+### 5. تعديل `admin/pages/permissions.php`
 
-**بعد:**
+**بعد التعديل:**
 - ✅ يقرأ الصلاحيات من الـ constants مباشرة
 - ✅ عرض مصفوفة الأدوار × الصلاحيات
 
@@ -207,11 +175,10 @@ Trusted-Social-Network-Platform/
 
 | المشكلة | السبب | الحل |
 |---|---|---|
-| قاعدة البيانات لا تتصل | إعدادات خاطئة | ربط Amazon RDS في `config/app.php` |
-| `log_activity` يكسر الصفحة | ENUM خاطئ في `audit_logs` | تصحيح نوع الـ action |
+| قاعدة البيانات لا تتصل | إعدادات غير مكتملة | ربط Amazon RDS في `config/app.php` |
 | تسجيل الدخول يفشل دائماً | هاشات `$2b$` لا تعمل مع PHP | تحويل `$2b$` → `$2y$` تلقائياً |
 | `user_id = 0` مرفوض | الشرط `<= 0` يرفض الصفر | تغيير الشرط إلى `isset()` |
-| Fatal Error عند الدخول | أعمدة `remember_token_*` ناقصة | `try/catch` + سكريبت SQL تكميلي |
+| Fatal Error عند الدخول | أعمدة remember_token ناقصة | `try/catch` ناعم |
 | `require_login` يوجه خاطئ | يوجه لـ `index.php` | تصحيح إلى `login.php` |
 
 ---
@@ -222,7 +189,7 @@ Trusted-Social-Network-Platform/
 |---|---|
 | `README.md` | دليل شامل: تشغيل فوري بـ Amazon RDS + تعليمات القاعدة المحلية |
 | `.gitignore` | حماية الملفات الحساسة |
-| **GitHub Push** | رفع 27 ملف على `UniLink-platform-ye/Trusted-Social-Network-Platform` |
+| **GitHub Push** | رفع المشروع كاملاً على `UniLink-platform-ye/Trusted-Social-Network-Platform` |
 
 ---
 
@@ -230,11 +197,10 @@ Trusted-Social-Network-Platform/
 
 | الفئة | العدد |
 |---|---|
-| ملفات PHP معدّلة بالكامل | 6 ملفات |
+| ملفات PHP معدّلة | 5 ملفات |
 | ملفات PHP جديدة | 5 ملفات |
 | ملفات JS جديدة | 1 ملف |
-| سكريبتات SQL جديدة | 2 سكريبت |
-| أخطاء مُصلحة | 6 أخطاء |
+| أخطاء مُصلحة | 5 أخطاء |
 | ميزات مضافة | 5 ميزات |
 
 ---
@@ -244,10 +210,9 @@ Trusted-Social-Network-Platform/
 | البريد الإلكتروني | كلمة المرور | الدور |
 |---|---|---|
 | `admin@unilink.local` | `Admin@1234` | مدير النظام ✅ |
-| `meera.admin@unilink.edu` | `Test@123` | مدير النظام (بديل) |
-| `salma.supervisor@unilink.edu` | `Test@123` | مشرف |
-| `ahmed.prof@unilink.edu` | `Test@123` | أستاذ |
-| `rania.student@unilink.edu` | `Test@123` | طالب |
+| `supervisor@unilink.local` | `Admin@1234` | مشرف |
+| `professor@unilink.local` | `Admin@1234` | أستاذ |
+| `student@unilink.local` | `Admin@1234` | طالب |
 
 **رابط الوصول:** `http://localhost/Trusted-Social-Network-Platform/admin/login.php`
 
