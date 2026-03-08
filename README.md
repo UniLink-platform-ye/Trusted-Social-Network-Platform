@@ -34,7 +34,7 @@ git clone https://github.com/UniLink-platform-ye/Trusted-Social-Network-Platform
 افتح **Command Prompt كـ Administrator** ونفّذ:
 
 ```cmd
-mklink /J "C:\xampp\htdocs\Trusted-Social-Network-Platform" "D:\UniLink-platform-ye\Trusted-Social-Network-Platform"
+mklink /J "C:\xampp\htdocs\Trusted-Social-Network-Platform" "C:\Users\M\Downloads\UniLink-platform-ye\Trusted-Social-Network-Platform"
 ```
 
 > غيّر `D:\UniLink-platform-ye\Trusted-Social-Network-Platform` إلى المسار الذي استنسخت فيه المشروع.
