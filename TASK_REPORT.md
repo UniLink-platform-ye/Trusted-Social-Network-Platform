@@ -8,6 +8,56 @@
 
 ---
 
+## 🗺️ مسار كل مهمة من المهام الأربع
+
+| # | المهمة | الملفات الرئيسية | رابط الوصول |
+|---|---|---|---|
+| 1 | **لوحة التحكم للنظام** | `login.php` · `index.php` · `includes/*` · `partials/*` · `config/app.php` | `/admin/login.php` |
+| 2 | **شاشة القيادة** | `pages/dashboard.php` | `?page=dashboard` |
+| 3 | **شاشة المستخدمين** | `pages/users.php` · `ajax/users.php` · `js/users.js` | `?page=users` |
+| 4 | **صلاحيات المستخدم** | `pages/permissions.php` · `ajax/permissions.php` · `rbac.php` · `js/permissions.js` | `?page=permissions` |
+
+### تفصيل مسار كل مهمة داخل المشروع
+
+```
+Trusted-Social-Network-Platform/
+│
+├── config/app.php                    ← ① إعدادات التطبيق + Amazon RDS
+│
+└── admin/
+    ├── login.php                     ← ① صفحة تسجيل الدخول
+    ├── logout.php                    ← ① تسجيل الخروج
+    ├── index.php                     ← ① نقطة الدخول الرئيسية (يوزّع الصفحات)
+    │
+    ├── includes/
+    │   ├── bootstrap.php             ← ① يُحمَّل أول شيء في كل طلب
+    │   ├── auth.php                  ← ① المصادقة (login/session/remember me)
+    │   ├── rbac.php                  ← ④ ثوابت الصلاحيات (ROLE_PERMISSIONS)
+    │   └── helpers.php               ← ① دوال مساعدة عامة
+    │
+    ├── partials/
+    │   ├── header.php                ← ① رأس HTML + روابط CSS
+    │   ├── sidebar.php               ← ① القائمة الجانبية + زر تسجيل الخروج
+    │   ├── topbar.php                ← ① الشريط العلوي + تبديل اللغة AR/EN
+    │   └── footer.php                ← ① JS + SweetAlert2
+    │
+    ├── pages/
+    │   ├── dashboard.php             ← ② شاشة القيادة (KPIs + رسوم بيانية)
+    │   ├── users.php                 ← ③ شاشة المستخدمين (جدول + فلتر + modals)
+    │   └── permissions.php           ← ④ مصفوفة الأدوار × الصلاحيات
+    │
+    ├── ajax/
+    │   ├── users.php                 ← ③ معالج (create/update/suspend/activate/get)
+    │   └── permissions.php           ← ④ معالج (toggle/create_role/update_role)
+    │
+    └── assets/
+        ├── css/style.css             ← ① كل تنسيقات اللوحة
+        └── js/
+            ├── app.js                ← ① السلوك العام (sidebar toggle, modals)
+            ├── users.js              ← ③ Ajax + SweetAlert للمستخدمين
+            └── permissions.js        ← ④ toggle switches للصلاحيات
+```
+
 ## 🔍 أولاً — التحليل والفهم
 
 قبل البدء في أي تعديل، قمت بتحليل كامل لما تسلّمته من الفريق:
