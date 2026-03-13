@@ -2,10 +2,10 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/bootstrap.php';
 
-if (is_logged_in()) redirect('feed.php');
+if (is_logged_in()) redirect('app/feed.php');
 if (empty($_SESSION['pending_otp']['user_id'])) {
     flash('error','انتهت صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.');
-    redirect('login.php');
+    redirect('app/login.php');
 }
 
 $pendingUserId = (int)$_SESSION['pending_otp']['user_id'];
@@ -40,7 +40,7 @@ if (is_post()) {
         } elseif ($action === 'resend') {
             $u = fetch_user_by_id($pendingUserId);
             if ($u) { $otp = generate_and_store_otp($pendingUserId); send_otp_email($pendingEmail,$u['full_name']??$u['username'],$otp); $success = 'تم إرسال رمز جديد.'; }
-        } elseif ($action === 'cancel') { unset($_SESSION['pending_otp']); redirect('login.php'); }
+        } elseif ($action === 'cancel') { unset($_SESSION['pending_otp']); redirect('app/login.php'); }
     }
 }
 ?>

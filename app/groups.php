@@ -23,7 +23,7 @@ if (is_post() && verify_csrf()) {
             } catch(\Throwable $e) {}
         }
     }
-    redirect('groups.php');
+    redirect('app/groups.php');
 }
 
 /* ── جلب المجموعات ─────────────────────────────── */

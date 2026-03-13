@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/bootstrap.php';
 
-if (is_logged_in()) redirect('feed.php');
+if (is_logged_in()) redirect('app/feed.php');
 $error = flash('error'); $success = flash('success');
 $f = ['full_name'=>'','email'=>'','academic_id'=>'','department'=>''];
 
@@ -41,7 +41,7 @@ if (is_post()) {
                 $_SESSION['verify_user_id']  = $userId;
                 $_SESSION['verify_user_email'] = $f['email'];
                 flash('success','تم إنشاء حسابك! أدخل رمز التحقق المُرسَل لبريدك لتفعيل الحساب.');
-                redirect('verify_email.php');
+                redirect('app/verify_email.php');
             }
         }
     }

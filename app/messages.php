@@ -16,7 +16,7 @@ if (is_post() && verify_csrf() && isset($_POST['send_msg'])) {
             $ins->execute([':s'=>$uid,':r'=>$toId,':c'=>$msg]);
         } catch(\Throwable $e) {}
     }
-    redirect('messages.php?with=' . $toId);
+    redirect('app/messages.php?with=' . $toId);
 }
 
 /* ── قائمة المحادثات ─────────────────────────── */

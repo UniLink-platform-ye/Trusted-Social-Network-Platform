@@ -43,7 +43,7 @@ if (is_post()) {
                 $otp = generate_and_store_otp((int)$user['user_id']);
                 send_otp_email($user['email'], $user['full_name'] ?? $user['username'], $otp);
                 flash('success', 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.');
-                redirect('otp_verify.php');
+                redirect('app/otp_verify.php');
             } else {
                 $error = $errMsg;
             }

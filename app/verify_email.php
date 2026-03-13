@@ -2,8 +2,8 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/bootstrap.php';
 
-if (is_logged_in()) redirect('feed.php');
-if (empty($_SESSION['verify_user_id'])) { flash('error','انتهت الجلسة.'); redirect('register.php'); }
+if (is_logged_in()) redirect('app/feed.php');
+if (empty($_SESSION['verify_user_id'])) { flash('error','انتهت الجلسة.'); redirect('app/register.php'); }
 
 $uid   = (int)$_SESSION['verify_user_id'];
 $email = (string)($_SESSION['verify_user_email'] ?? '');
@@ -24,7 +24,7 @@ if (is_post() && verify_csrf()) {
                 log_activity('register','users',$uid,'User registered and verified');
                 unset($_SESSION['verify_user_id'],$_SESSION['verify_user_email']);
                 flash('success','🎉 تم تفعيل حسابك! مرحباً بك في UniLink.');
-                redirect('feed.php');
+                redirect('app/feed.php');
             }
         }
     } elseif ($action === 'resend') {
@@ -33,7 +33,7 @@ if (is_post() && verify_csrf()) {
     } elseif ($action === 'cancel') {
         db()->prepare('DELETE FROM users WHERE user_id=:id AND is_verified=0')->execute([':id'=>$uid]);
         unset($_SESSION['verify_user_id'],$_SESSION['verify_user_email']);
-        redirect('register.php');
+        redirect('app/register.php');
     }
 }
 ?>

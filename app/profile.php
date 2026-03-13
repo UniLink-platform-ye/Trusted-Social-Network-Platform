@@ -13,7 +13,7 @@ try {
     $stmt = db()->prepare('SELECT * FROM users WHERE user_id=:id LIMIT 1');
     $stmt->execute([':id'=>$targetId]); $user=$stmt->fetch();
 } catch(\Throwable $e) {}
-if (!$user) { flash('error','المستخدم غير موجود.'); redirect('feed.php'); }
+if (!$user) { flash('error','المستخدم غير موجود.'); redirect('app/feed.php'); }
 
 /* ── تحديث الملف الشخصي ───────────────────────── */
 $editError = ''; $editSuccess = '';
