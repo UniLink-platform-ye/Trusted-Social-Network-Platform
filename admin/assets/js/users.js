@@ -6,7 +6,13 @@
     const csrfToken = $('meta[name="csrf-token"]').attr('content') || '';
 
     function postAjax(data, onSuccess, onError) {
-        data.csrf_token = csrfToken;
+        // إذا كان data string (من serialize) نُلحق csrf_token،
+        // وإذا كان object نضيفها كخاصية
+        if (typeof data === 'string') {
+            data = data + '&csrf_token=' + encodeURIComponent(csrfToken);
+        } else {
+            data.csrf_token = csrfToken;
+        }
         $.ajax({
             url: AJAX_URL,
             method: 'POST',
