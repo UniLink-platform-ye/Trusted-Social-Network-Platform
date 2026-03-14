@@ -21,7 +21,7 @@ if (is_post()) {
         $action = $_POST['action'] ?? '';
 
         if ($action === 'verify') {
-            $otp = preg_replace('/\D/', '', implode('', array_map(fn($i) => $_POST["d{$i}"] ?? '', range(1,6))));
+            $otp = preg_replace('/\D/', '', $_POST['otp_combined'] ?? '');
             if (strlen($otp) !== 6) { $error = 'يرجى إدخال الرمز المكوّن من 6 أرقام.'; }
             elseif (!verify_otp($pendingUserId, $otp)) { $error = 'رمز غير صحيح أو انتهت صلاحيته.'; log_activity('login_failed','users',$pendingUserId,'Wrong OTP'); }
             else {

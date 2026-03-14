@@ -13,8 +13,8 @@ $error = flash('error'); $success = flash('success');
 if (is_post() && verify_csrf()) {
     $action = $_POST['action'] ?? '';
     if ($action === 'verify') {
-        $otp = preg_replace('/\D/','', implode('', array_map(fn($i)=>$_POST["d{$i}"]??'', range(1,6))));
-        if (strlen($otp)!==6) { $error='أدخل الرمز المكوّن من 6 أرقام.'; }
+        $otp = preg_replace('/\D/', '', $_POST['otp_combined'] ?? '');
+        if (strlen($otp) !== 6) { $error = 'أدخل الرمز المكوّن من 6 أرقام.'; }
         elseif (!verify_otp($uid, $otp)) { $error='رمز غير صحيح أو انتهت صلاحيته.'; }
         else {
             db()->prepare('UPDATE users SET is_verified=1 WHERE user_id=:id')->execute([':id'=>$uid]);

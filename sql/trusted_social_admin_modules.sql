@@ -177,6 +177,20 @@ CREATE TABLE IF NOT EXISTS `trusted_social_network_platform`.`audit_logs` (
     CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `trusted_social_network_platform`.`users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS fcm_tokens (
+    id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT UNSIGNED NOT NULL,
+    token       TEXT         NOT NULL,
+    device_type ENUM('android','ios','web') NOT NULL DEFAULT 'android',
+    is_active   TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_fcm_user FOREIGN KEY (user_id)
+        REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_user_active (user_id, is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `trusted_social_network_platform`.`users` (`username`, `email`, `password_hash`, `role`, `full_name`, `academic_id`, `department`, `is_verified`, `status`) VALUES
