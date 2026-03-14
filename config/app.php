@@ -35,8 +35,8 @@ const REMEMBER_DAYS = 14;
 // ── Gmail SMTP — OTP ───────────────────────────────────────────────────────
 const MAIL_HOST = 'smtp.gmail.com';
 const MAIL_PORT = 587;
-const MAIL_USERNAME = 'wwwbby2040@gmail.com';
-const MAIL_PASSWORD = 'cewr ojlr azsi fhur';
-const MAIL_FROM = 'wwwbby2040@gmail.com';
+const MAIL_USERNAME = 'merfah3@gmail.com';
+const MAIL_PASSWORD = 'ansb hbyk jeus qaqo';
+const MAIL_FROM = 'merfah3@gmail.com';
 const MAIL_FROM_NAME = 'UniLink Platform';
 // ───────────────────────────────────────────────────────────────────────────
