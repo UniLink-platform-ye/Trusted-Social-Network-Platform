@@ -8,7 +8,7 @@ try {
         SELECT p.*, u.full_name, u.username, u.role, u.avatar_url, g.group_name
         FROM posts p
         JOIN users u ON u.user_id=p.user_id
-        LEFT JOIN groups g ON g.group_id=p.group_id
+        LEFT JOIN `groups` g ON g.group_id=p.group_id
         WHERE p.status='active'
           AND (p.visibility='public'
                OR (p.visibility='group' AND p.group_id IN

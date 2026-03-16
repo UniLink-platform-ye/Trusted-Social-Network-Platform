@@ -53,7 +53,16 @@ function jwt_decode(string $token): ?array
 function jwt_from_request(): ?string
 {
     $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) return $m[1];
+
+    // حل مشكلة Apache والسيرفرات التي تسحب ترويسة Authorization
+    if (empty($auth) && function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        $auth = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
+    if (preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) {
+        return $m[1];
+    }
     return null;
 }
 

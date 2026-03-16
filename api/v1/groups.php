@@ -6,7 +6,7 @@ $method=$_SERVER['REQUEST_METHOD'];
 if ($method==='GET') {
     // جلب المجموعات
     $filter=$_GET['filter']??'all';
-    $sql="SELECT g.*,u.full_name AS creator_name,(SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id=g.group_id) AS member_count,(SELECT COUNT(*) FROM group_members gm3 WHERE gm3.group_id=g.group_id AND gm3.user_id=:uid) AS is_member FROM groups g LEFT JOIN users u ON u.user_id=g.created_by WHERE g.status='active'";
+    $sql="SELECT g.*,u.full_name AS creator_name,(SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id=g.group_id) AS member_count,(SELECT COUNT(*) FROM group_members gm3 WHERE gm3.group_id=g.group_id AND gm3.user_id=:uid) AS is_member FROM `groups` g LEFT JOIN users u ON u.user_id=g.created_by WHERE g.status='active'";
     if ($filter==='mine') $sql.=" AND g.group_id IN(SELECT group_id FROM group_members WHERE user_id=:uid2)";
     $sql.=" ORDER BY member_count DESC LIMIT 50";
     $st=db()->prepare($sql);
