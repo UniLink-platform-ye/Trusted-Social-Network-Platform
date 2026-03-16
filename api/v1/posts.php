@@ -11,7 +11,7 @@ if ($method === 'POST') {
     $groupId = !empty($b['group_id']) ? (int)$b['group_id'] : null;
     $vis     = $groupId ? 'group' : 'public';
     if (!$content) api_error('محتوى المنشور مطلوب');
-    $ins = db()->prepare('INSERT INTO posts (user_id,group_id,content,post_type,visibility,status,created_at) VALUES (:u,:g,:c,:t,:v,"active",NOW())');
+    $ins = db()->prepare('INSERT INTO posts (user_id,group_id,content,type,visibility,status,created_at) VALUES (:u,:g,:c,:t,:v,"active",NOW())');
     $ins->execute([':u'=>$uid,':g'=>$groupId,':c'=>$content,':t'=>$type,':v'=>$vis]);
     $postId = (int)db()->lastInsertId();
     if ($groupId) notify_new_post($postId, $groupId, $uid, $me['full_name']??'');

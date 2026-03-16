@@ -20,7 +20,7 @@ elseif ($method==='POST') {
     $groupId=(int)($b['group_id']??0);
     if (!$groupId) api_error('group_id مطلوب');
     if ($action==='join') {
-        db()->prepare('INSERT IGNORE INTO group_members (group_id,user_id,role,joined_at) VALUES (:g,:u,"member",NOW())')->execute([':g'=>$groupId,':u'=>$uid]);
+        db()->prepare('INSERT IGNORE INTO group_members (group_id,user_id,member_role,joined_at) VALUES (:g,:u,"member",NOW())')->execute([':g'=>$groupId,':u'=>$uid]);
         api_ok([],'تم الانضمام للمجموعة');
     } elseif ($action==='leave') {
         db()->prepare('DELETE FROM group_members WHERE group_id=:g AND user_id=:u')->execute([':g'=>$groupId,':u'=>$uid]);

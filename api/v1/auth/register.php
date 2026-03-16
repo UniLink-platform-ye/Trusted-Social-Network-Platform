@@ -32,5 +32,5 @@ $userId = (int)db()->lastInsertId();
 $otp = generate_and_store_otp($userId);
 send_otp_email($email, $fullName, $otp);
 
-$pendingToken = jwt_encode(['user_id'=>$userId,'email'=>$email,'purpose'=>'verify_email','exp'=>time()+600]);
+$pendingToken = jwt_encode(['user_id'=>$userId,'email'=>$email,'purpose'=>'otp_pending','exp'=>time()+600]);
 api_ok(['pending_token' => $pendingToken], 'تم إنشاء الحساب. أدخل رمز OTP المُرسَل لبريدك لتفعيل الحساب.', 201);
