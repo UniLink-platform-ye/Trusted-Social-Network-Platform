@@ -172,6 +172,13 @@ $avatarColor = role_color($userDetail['role']);
                     <i class="fa-solid fa-user-check"></i> تفعيل
                 </button>
             <?php endif; ?>
+            <?php if (current_user()['role'] === 'admin' && $userDetail['user_id'] != current_user()['user_id']): ?>
+                <button class="btn btn-danger btn-sm btn-delete-user"
+                        data-id="<?= (int) $userDetail['user_id']; ?>"
+                        data-name="<?= e($userDetail['full_name']); ?>">
+                    <i class="fa-solid fa-trash-can"></i> حذف نهائي
+                </button>
+            <?php endif; ?>
         </div>
     </div>
 </section>

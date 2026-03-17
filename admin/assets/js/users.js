@@ -119,6 +119,34 @@
         });
     });
 
+    // ── حذف مستخدم جذرياً ──────────────────────────────────────────────────
+    $(document).on('click', '.btn-delete-user', function () {
+        const id   = $(this).data('id');
+        const name = $(this).data('name');
+        Swal.fire({
+            title: 'حذف الحساب نهائياً',
+            html: `أنت على وشك حذف <strong>${name}</strong> بشكل جذري! <br><br> <span style="color:#ef4444;font-weight:bold;">سيتم حذف كافة بياناته المرتبطة (مجموعاته، ملفاته، محادثاته، سجلاته، وغيرها). هذا الإجراء لا يمكن التراجع عنه.</span> هل أنت متأكد؟`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonText: 'إلغاء',
+            confirmButtonText: 'نعم، احذف جذرياً!',
+            reverseButtons: true,
+        }).then(res => {
+            if (res.isConfirmed) {
+                postAjax({ action: 'delete_user', user_id: id }, () => {
+                    const row = $('#user-row-' + id);
+                    if (row.length) {
+                        row.fadeOut(300, function() { $(this).remove(); });
+                    } else {
+                        // إذا كنا في صفحة التفاصيل، نعود للخلف
+                        setTimeout(() => location.href = '?page=users', 800);
+                    }
+                });
+            }
+        });
+    });
+
     // ── عرض تفاصيل مستخدم ──────────────────────────────────────────────
     $(document).on('click', '.btn-view-user', function () {
         const id = $(this).data('id');

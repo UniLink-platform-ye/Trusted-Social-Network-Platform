@@ -41,9 +41,9 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= e(asset_url('js/app.js')); ?>"></script>
+<script src="<?= e(asset_url('js/app.js')); ?>?v=<?= time() ?>"></script>
 <?php foreach ($pageScripts as $script): ?>
-    <script src="<?= e(asset_url('js/' . $script)); ?>"></script>
+    <script src="<?= e(asset_url('js/' . $script)); ?>?v=<?= time() ?>"></script>
 <?php endforeach; ?>
 <?php if ($success = flash('success')): ?>
 <script>

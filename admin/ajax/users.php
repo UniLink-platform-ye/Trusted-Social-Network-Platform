@@ -167,6 +167,46 @@ try {
             json_response(['success' => true, 'message' => 'تم تفعيل الحساب.']);
             break;
 
+        case 'delete_user':
+            $currentUser = current_user();
+            if (($currentUser['role'] ?? '') !== 'admin') {
+                users_error('عذراً، فقط المدراء (Admins) يمكنهم حذف المستخدمين نهائياً.', 403);
+            }
+
+            $userId = (int) ($_POST['user_id'] ?? 0);
+            if ($userId <= 0) {
+                users_error('معرف المستخدم غير صالح.');
+            }
+            if ($userId === (int) $currentUser['user_id']) {
+                users_error('لا يمكنك حذف حسابك الخاص!');
+            }
+
+            // لتجنب مشاكل Foreign Keys (RESTRICT) في قواعد البيانات الحالية،
+            // نحذف المجموعات والملفات المملوكة للمستخدم أولاً ثم نحذف المستخدم
+            // باقي الجداول مثل المنشورات والرسائل تحذف تلقائياً بفضل CASCADE ولكن للاحتياط:
+            try {
+                db()->beginTransaction();
+                
+                // 1. حذف المجموعات التي أنشأها
+                db()->prepare('DELETE FROM `groups` WHERE created_by = :id')->execute([':id' => $userId]);
+                
+                // 2. حذف ملفاته المرفوعة
+                db()->prepare('DELETE FROM `files` WHERE user_id = :id')->execute([':id' => $userId]);
+                
+                // 3. حذف المستخدم نفسه (ستعمل هنا ON DELETE CASCADE لبقية الجداول)
+                db()->prepare('DELETE FROM users WHERE user_id = :id')->execute([':id' => $userId]);
+                
+                db()->commit();
+                
+                log_activity('account_delete', 'users', $currentUser['user_id'], "تم حذف المستخدم رقم $userId بشكل جذري مع كافة بياناته.");
+                json_response(['success' => true, 'message' => 'تم حذف الحساب وكافة سجلاته بنجاح.']);
+            } catch (Exception $e) {
+                db()->rollBack();
+                error_log('Error deleting user: ' . $e->getMessage());
+                users_error('فشل عملية الحذف الجذري. قد تكون هناك سجلات مرتبطة تمنع ذلك.', 500);
+            }
+            break;
+
         case 'get_user':
             require_permission('users.view');
 

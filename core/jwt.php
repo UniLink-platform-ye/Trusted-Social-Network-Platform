@@ -75,7 +75,25 @@ function api_user(): ?array
     if (!$token) return null;
     $payload = jwt_decode($token);
     if (!$payload || empty($payload['user_id'])) return null;
-    return $payload;
+
+    // --- التعديل الأمني: التحقق المباشر من قاعدة البيانات ---
+    try {
+        $stmt = db()->prepare('SELECT * FROM users WHERE user_id = :id AND status = \'active\' LIMIT 1');
+        $stmt->execute([':id' => (int) $payload['user_id']]);
+        $userRow = $stmt->fetch();
+
+        if (!$userRow) {
+            // الحساب غير موجود في قاعدة الهواتف أو تم تعليقه/حذفه
+            return null;
+        }
+
+        // دمج بيانات قاعدة البيانات المباشرة مع الـ payload (لتحديث الاسم والدور فوراً إذا تم تعديله)
+        return array_merge($payload, $userRow);
+    } catch (\Throwable $e) {
+        // في حالة وجود خطأ في الاتصال بالقاعدة نعامل التوكن كغير صالح احتياطياً
+        error_log('API Auth DB Check Error: ' . $e->getMessage());
+        return null;
+    }
 }
 
 /**

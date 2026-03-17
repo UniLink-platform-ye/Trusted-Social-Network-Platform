@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `trusted_social_network_platform`.`groups` (
     `updated_at`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`group_id`),
     INDEX `idx_groups_created_by` (`created_by`),
-    CONSTRAINT `fk_groups_creator` FOREIGN KEY (`created_by`) REFERENCES `trusted_social_network_platform`.`users` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_groups_creator` FOREIGN KEY (`created_by`) REFERENCES `trusted_social_network_platform`.`users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `trusted_social_network_platform`.`group_members` (
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `trusted_social_network_platform`.`files` (
     PRIMARY KEY (`file_id`),
     INDEX `idx_files_user` (`user_id`),
     INDEX `idx_files_post` (`post_id`),
-    CONSTRAINT `fk_files_user` FOREIGN KEY (`user_id`) REFERENCES `trusted_social_network_platform`.`users` (`user_id`) ON DELETE RESTRICT  ON UPDATE CASCADE,
+    CONSTRAINT `fk_files_user` FOREIGN KEY (`user_id`) REFERENCES `trusted_social_network_platform`.`users` (`user_id`) ON DELETE CASCADE  ON UPDATE CASCADE,
     CONSTRAINT `fk_files_post` FOREIGN KEY (`post_id`) REFERENCES `trusted_social_network_platform`.`posts` (`post_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

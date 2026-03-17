@@ -187,6 +187,14 @@ $roleOptions = [''=>'كل الأدوار'] + $roleLabels;
                                     <i class="fa-solid fa-user-check"></i>
                                 </button>
                                 <?php endif; ?>
+                                <?php if (current_user()['role'] === 'admin' && $u['user_id'] != current_user()['user_id']): ?>
+                                <button class="btn btn-sm btn-danger btn-delete-user"
+                                        data-id="<?= (int) $u['user_id']; ?>"
+                                        data-name="<?= e($u['full_name']); ?>"
+                                        title="حذف الحساب نهائياً">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
