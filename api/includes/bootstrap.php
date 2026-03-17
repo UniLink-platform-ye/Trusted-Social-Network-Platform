@@ -22,6 +22,7 @@ require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/auth.php';
 require_once __DIR__ . '/../../core/jwt.php';
 require_once __DIR__ . '/../../core/notify.php';
+require_once __DIR__ . '/../../core/auto_join.php';
 require_once __DIR__ . '/../../core/mailer.php';
 
 // ── JSON body helper ───────────────────────────────────────
