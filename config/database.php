@@ -20,6 +20,12 @@ function db(): PDO
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+        // توحيد المنطقة الزمنية لقاعدة البيانات مع إعداد PHP (Asia/Riyadh)
+        try {
+            $pdo->exec(\"SET time_zone = '+03:00'\");
+        } catch (PDOException $e) {
+            error_log('Failed to set MySQL time_zone: ' . $e->getMessage());
+        }
     } catch (PDOException $exception) {
         http_response_code(500);
         echo 'Database connection failed. Please verify config/database.php settings.';
