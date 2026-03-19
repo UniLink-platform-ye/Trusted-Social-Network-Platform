@@ -21,12 +21,38 @@ const APP_BASE_PATH = '/Trusted-Social-Network-Platform';
 const APP_LOCALE = 'ar';
 const APP_DIR = 'rtl';
 
-// ── Amazon RDS ─────────────────────────────────────────────────────────────
-const DB_HOST = 'unilink-platform.c6pgq44asn04.us-east-1.rds.amazonaws.com';
-const DB_PORT = '3306';
-const DB_NAME = 'trusted_social_network_platform';
-const DB_USER = 'admin';
-const DB_PASS = 'meera999444';
+// ── التبديل التلقائي لبيئة العمل (Local vs Production) ───────────────────────
+$isLocal = false;
+if (isset($_SERVER['HTTP_HOST'])) {
+    $host = strtolower($_SERVER['HTTP_HOST']);
+    // إذا كان المضيف localhost أو 127.0.0.1 أو الآي بي الخاص بالمحاكي 10.0.2.2 أو آي بي محلي
+    if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || str_contains($host, '10.0.2.2') || str_starts_with($host, '192.168.')) {
+        $isLocal = true;
+    }
+}
+elseif (php_sapi_name() === 'cli') {
+    // إذا كان يعمل عبر الـ CLI (مثل Cron jobs) ويوجد في مسار XAMPP
+    if (str_contains(strtolower(__DIR__), 'xampp') || str_contains(strtolower(__DIR__), 'htdocs')) {
+        $isLocal = true;
+    }
+}
+
+if ($isLocal) {
+    // إعدادات XAMPP المحلية
+    define('DB_HOST', 'localhost');
+    define('DB_PORT', '3306');
+    define('DB_NAME', 'trusted_social_network_platform');
+    define('DB_USER', 'root');
+    define('DB_PASS', 'root');
+}
+else {
+    // إعدادات البيئة الحقيقية - Amazon RDS
+    define('DB_HOST', 'unilink-platform.c6pgq44asn04.us-east-1.rds.amazonaws.com');
+    define('DB_PORT', '3306');
+    define('DB_NAME', 'trusted_social_network_platform');
+    define('DB_USER', 'admin');
+    define('DB_PASS', 'meera999444');
+}
 // ───────────────────────────────────────────────────────────────────────────
 
 const REMEMBER_COOKIE = 'unilink_remember';
