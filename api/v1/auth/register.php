@@ -17,7 +17,7 @@ $academicId = trim($b['academic_id'] ?? '');
 $yearLevel  = isset($b['year_level']) ? (int)$b['year_level'] : null;
 $batchYear  = isset($b['batch_year']) ? (int)$b['batch_year'] : null;
 
-if (!$fullName || !$email || !$password) api_error('full_name و email و password مطلوبة');
+if (!$fullName || !$email || !$password || !$academicId) api_error('الاسم والبريد وكلمة المرور والرقم الجامعي/الوظيفي مطلوبة');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) api_error('البريد الإلكتروني غير صالح');
 if (strlen($password) < 8) api_error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
 
