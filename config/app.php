@@ -22,11 +22,12 @@ const APP_LOCALE = 'ar';
 const APP_DIR = 'rtl';
 
 // ── التبديل التلقائي لبيئة العمل (Local vs Production) ───────────────────────
-$isLocal = false;
+$isLocal = true;
+
 if (isset($_SERVER['HTTP_HOST'])) {
     $host = strtolower($_SERVER['HTTP_HOST']);
     // إذا كان المضيف localhost أو 127.0.0.1 أو الآي بي الخاص بالمحاكي 10.0.2.2 أو آي بي محلي
-    if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || str_contains($host, '10.0.2.2') || str_starts_with($host, '192.168.')) {
+    if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || str_contains($host, '10.0.2.2') || str_starts_with($host, '192.168.1.20')) {
         $isLocal = true;
     }
 }
@@ -65,6 +66,12 @@ const MAIL_USERNAME = 'uniklinikplatform@gmail.com';
 const MAIL_PASSWORD = 'tpzg hyzk tbye fkfo';
 const MAIL_FROM = 'uniklinikplatform@gmail.com';
 const MAIL_FROM_NAME = 'UniLink Platform';
+// const MAIL_HOST = 'smtp.gmail.com';
+// const MAIL_PORT = 587;
+// const MAIL_USERNAME = 'wwwbby2040@gmail.com';
+// const MAIL_PASSWORD = 'cewr ojlr azsi fhur';
+// const MAIL_FROM = 'wwwbby2040@gmail.com';
+// const MAIL_FROM_NAME = 'UniLink Platform';
 // ───────────────────────────────────────────────────────────────────────────
 
 // ── JWT — REST API ─────────────────────────────────────────────────────────

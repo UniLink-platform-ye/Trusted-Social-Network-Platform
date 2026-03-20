@@ -27,4 +27,21 @@ elseif ($method === 'DELETE') {
     db()->prepare('UPDATE posts SET status="deleted" WHERE post_id=:id')->execute([':id'=>$postId]);
     api_ok([], 'تم حذف المنشور');
 }
+// PUT — تعديل منشور
+elseif ($method === 'PUT') {
+    $b = json_body();
+    $postId = (int)($_GET['id'] ?? $b['post_id'] ?? 0);
+    $content = trim($b['content'] ?? '');
+    
+    if (!$postId) api_error('id مطلوب');
+    if (!$content) api_error('محتوى المنشور مطلوب');
+    
+    $stmt = db()->prepare('SELECT user_id FROM posts WHERE post_id=:id LIMIT 1');
+    $stmt->execute([':id'=>$postId]); $post=$stmt->fetch();
+    if (!$post) api_error('المنشور غير موجود', 404);
+    if ((int)$post['user_id']!==$uid && !in_array($me['role'],['admin','supervisor'])) api_error('ليس لديك صلاحية لتعديل المنشور', 403);
+    
+    db()->prepare('UPDATE posts SET content=:c, updated_at=NOW() WHERE post_id=:id')->execute([':c'=>$content, ':id'=>$postId]);
+    api_ok([], 'تم تعديل المنشور بنجاح');
+}
 else api_error('Method Not Allowed', 405);
