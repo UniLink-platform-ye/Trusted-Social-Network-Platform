@@ -8,5 +8,6 @@ require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/auth.php';
 require_once __DIR__ . '/../../core/rbac.php';
 require_once __DIR__ . '/../../core/mailer.php';
+require_once __DIR__ . '/../../core/branding.php';
 
 restore_remember_session();

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1)
+declare(strict_types=1)
 ;
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -30,8 +30,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
     if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || str_contains($host, '10.0.2.2') || str_starts_with($host, '192.168.1.20')) {
         $isLocal = true;
     }
-}
-elseif (php_sapi_name() === 'cli') {
+} elseif (php_sapi_name() === 'cli') {
     // إذا كان يعمل عبر الـ CLI (مثل Cron jobs) ويوجد في مسار XAMPP
     if (str_contains(strtolower(__DIR__), 'xampp') || str_contains(strtolower(__DIR__), 'htdocs')) {
         $isLocal = true;
@@ -45,8 +44,7 @@ if ($isLocal) {
     define('DB_NAME', 'trusted_social_network_platform');
     define('DB_USER', 'root');
     define('DB_PASS', 'root');
-}
-else {
+} else {
     // إعدادات البيئة الحقيقية - Amazon RDS
     define('DB_HOST', 'unilink-platform.c6pgq44asn04.us-east-1.rds.amazonaws.com');
     define('DB_PORT', '3306');
@@ -66,6 +64,7 @@ const MAIL_USERNAME = 'uniklinikplatform@gmail.com';
 const MAIL_PASSWORD = 'tpzg hyzk tbye fkfo';
 const MAIL_FROM = 'uniklinikplatform@gmail.com';
 const MAIL_FROM_NAME = 'UniLink Platform';
+
 // const MAIL_HOST = 'smtp.gmail.com';
 // const MAIL_PORT = 587;
 // const MAIL_USERNAME = 'wwwbby2040@gmail.com';

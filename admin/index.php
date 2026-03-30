@@ -84,6 +84,13 @@ $pages = [
         'icon'     => 'fa-solid fa-gear',
         'perm'     => 'settings.manage',
     ],
+    'branding' => [
+        'title'    => 'App Branding',
+        'title_ar' => 'هوية المنصة',
+        'file'     => __DIR__ . '/pages/branding.php',
+        'icon'     => 'fa-solid fa-palette',
+        'perm'     => 'settings.manage',
+    ],
 ];
 
 $activePage = $_GET['page'] ?? 'dashboard';

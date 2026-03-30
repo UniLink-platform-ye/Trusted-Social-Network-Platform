@@ -41,6 +41,12 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // ── Global JS config (used by all page scripts) ───────────────────────
+    window.ADMIN_URL  = '<?= e(admin_url('')); ?>';
+    window.CSRF_TOKEN = '<?= e(csrf_token()); ?>';
+    // ─────────────────────────────────────────────────────────────────────
+</script>
 <script src="<?= e(asset_url('js/app.js')); ?>?v=<?= time() ?>"></script>
 <?php foreach ($pageScripts as $script): ?>
     <script src="<?= e(asset_url('js/' . $script)); ?>?v=<?= time() ?>"></script>

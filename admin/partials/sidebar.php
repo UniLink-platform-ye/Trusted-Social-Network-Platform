@@ -33,7 +33,8 @@ $menuGroups = [
     'system_section' => [
         'label' => 'النظام',
         'items' => [
-            'settings'           => ['label' => 'Settings',           'label_ar' => 'الإعدادات',           'icon' => 'fa-solid fa-gear'],
+            'settings' => ['label' => 'Settings',    'label_ar' => 'الإعدادات',    'icon' => 'fa-solid fa-gear'],
+            'branding' => ['label' => 'App Branding', 'label_ar' => 'هوية المنصة', 'icon' => 'fa-solid fa-palette'],
         ],
     ],
 ];
@@ -50,6 +51,7 @@ $pagePerms = [
     'activity_logs'       => 'logs.view',
     'statistics'          => 'export.reports',
     'settings'            => 'settings.manage',
+    'branding'            => 'settings.manage',
 ];
 ?>
 <aside class="sidebar" id="sidebar">
