@@ -65,13 +65,6 @@ const MAIL_PASSWORD = 'tpzg hyzk tbye fkfo';
 const MAIL_FROM = 'uniklinikplatform@gmail.com';
 const MAIL_FROM_NAME = 'UniLink Platform';
 
-// const MAIL_HOST = 'smtp.gmail.com';
-// const MAIL_PORT = 587;
-// const MAIL_USERNAME = 'wwwbby2040@gmail.com';
-// const MAIL_PASSWORD = 'cewr ojlr azsi fhur';
-// const MAIL_FROM = 'wwwbby2040@gmail.com';
-// const MAIL_FROM_NAME = 'UniLink Platform';
-// ───────────────────────────────────────────────────────────────────────────
 
 // ── JWT — REST API ─────────────────────────────────────────────────────────
 const JWT_SECRET = 'unilink_jwt_s3cr3t_2026_change_in_prod';

@@ -280,3 +280,313 @@ SELECT user_id, 'report_submit', 'Harassment report handled and closed', '192.16
 
 INSERT INTO `trusted_social_network_platform`.`audit_logs` (`user_id`, `action`, `description`, `ip_address`)
 SELECT user_id, 'register', 'Database setup complete - system ready', '127.0.0.1' FROM `trusted_social_network_platform`.`users` WHERE username = 'admin' LIMIT 1;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 1) Courses
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `courses` (
+  `course_id`   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code`        VARCHAR(30)  NOT NULL,
+  `name`        VARCHAR(200) NOT NULL,
+  `department`  VARCHAR(100) NULL DEFAULT NULL,
+  `is_active`   TINYINT(1)   NOT NULL DEFAULT 1,
+  `created_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`course_id`),
+  UNIQUE KEY `uq_courses_code` (`code`),
+  KEY `idx_courses_dept` (`department`),
+  KEY `idx_courses_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `professor_courses` (
+  `id`                INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `professor_user_id` INT UNSIGNED NOT NULL,
+  `course_id`         INT UNSIGNED NOT NULL,
+  `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_prof_course` (`professor_user_id`, `course_id`),
+  KEY `idx_prof_course_prof` (`professor_user_id`),
+  KEY `idx_prof_course_course` (`course_id`),
+  CONSTRAINT `fk_prof_course_prof`  FOREIGN KEY (`professor_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_prof_course_course` FOREIGN KEY (`course_id`)         REFERENCES `courses` (`course_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 2) Add optional academic fields to users (year_level, batch_year)
+--    Use conditional ALTER to stay compatible with MySQL variants.
+-- ─────────────────────────────────────────────────────────────────────────────
+SET @has_year_level := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'year_level'
+);
+SET @sql := IF(@has_year_level = 0, 'ALTER TABLE `users` ADD COLUMN `year_level` INT NULL DEFAULT NULL AFTER `department`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_batch_year := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'batch_year'
+);
+SET @sql := IF(@has_batch_year = 0, 'ALTER TABLE `users` ADD COLUMN `batch_year` INT NULL DEFAULT NULL AFTER `year_level`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 3) Add course_id to groups (optional linkage for professor-created groups)
+-- ─────────────────────────────────────────────────────────────────────────────
+SET @has_groups_course := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'groups' AND COLUMN_NAME = 'course_id'
+);
+SET @sql := IF(@has_groups_course = 0, 'ALTER TABLE `groups` ADD COLUMN `course_id` INT UNSIGNED NULL DEFAULT NULL AFTER `type`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_groups_course_idx := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'groups' AND INDEX_NAME = 'idx_groups_course'
+);
+SET @sql := IF(@has_groups_course_idx = 0, 'ALTER TABLE `groups` ADD KEY `idx_groups_course` (`course_id`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Add FK if missing (best-effort; ignore if already exists or if engines differ)
+SET @has_groups_course_fk := (
+  SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'groups' AND CONSTRAINT_NAME = 'fk_groups_course'
+);
+SET @sql := IF(@has_groups_course_fk = 0,
+  'ALTER TABLE `groups` ADD CONSTRAINT `fk_groups_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE SET NULL ON UPDATE CASCADE',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 4) Auto-join rules
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `group_auto_join_rules` (
+  `rule_id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `group_id`           INT UNSIGNED NOT NULL,
+  `department`         VARCHAR(100) NULL DEFAULT NULL,
+  `academic_id_prefix` VARCHAR(20)  NULL DEFAULT NULL,
+  `year_level`         INT          NULL DEFAULT NULL,
+  `batch_year`         INT          NULL DEFAULT NULL,
+  `is_active`          TINYINT(1)   NOT NULL DEFAULT 1,
+  `created_at`         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`rule_id`),
+  KEY `idx_rules_group` (`group_id`),
+  KEY `idx_rules_active` (`is_active`),
+  KEY `idx_rules_dept` (`department`),
+  CONSTRAINT `fk_rules_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`group_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- 1) Extend files table with optional metadata
+SET @has_course_id := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND COLUMN_NAME = 'course_id'
+);
+SET @sql := IF(@has_course_id = 0, 'ALTER TABLE `files` ADD COLUMN `course_id` INT UNSIGNED NULL DEFAULT NULL AFTER `post_id`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_group_id := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND COLUMN_NAME = 'group_id'
+);
+SET @sql := IF(@has_group_id = 0, 'ALTER TABLE `files` ADD COLUMN `group_id` INT UNSIGNED NULL DEFAULT NULL AFTER `course_id`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_category := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND COLUMN_NAME = 'category'
+);
+SET @sql := IF(@has_category = 0, 'ALTER TABLE `files` ADD COLUMN `category` ENUM(''lecture'',''assignment'',''reference'',''other'') NOT NULL DEFAULT ''other'' AFTER `group_id`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_title := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND COLUMN_NAME = 'title'
+);
+SET @sql := IF(@has_title = 0, 'ALTER TABLE `files` ADD COLUMN `title` VARCHAR(255) NULL DEFAULT NULL AFTER `category`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_description := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND COLUMN_NAME = 'description'
+);
+SET @sql := IF(@has_description = 0, 'ALTER TABLE `files` ADD COLUMN `description` TEXT NULL DEFAULT NULL AFTER `title`', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 2) Indexes
+SET @has_idx_course_cat := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND INDEX_NAME = 'idx_files_course_category'
+);
+SET @sql := IF(@has_idx_course_cat = 0, 'ALTER TABLE `files` ADD KEY `idx_files_course_category` (`course_id`, `category`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_idx_group_cat := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND INDEX_NAME = 'idx_files_group_category'
+);
+SET @sql := IF(@has_idx_group_cat = 0, 'ALTER TABLE `files` ADD KEY `idx_files_group_category` (`group_id`, `category`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 3) Foreign keys (best-effort)
+SET @has_fk_files_course := (
+  SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND CONSTRAINT_NAME = 'fk_files_course'
+);
+SET @sql := IF(@has_fk_files_course = 0,
+  'ALTER TABLE `files` ADD CONSTRAINT `fk_files_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE SET NULL ON UPDATE CASCADE',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_fk_files_group2 := (
+  SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'files' AND CONSTRAINT_NAME = 'fk_files_group2'
+);
+SET @sql := IF(@has_fk_files_group2 = 0,
+  'ALTER TABLE `files` ADD CONSTRAINT `fk_files_group2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`group_id`) ON DELETE SET NULL ON UPDATE CASCADE',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1) Academic events (calendar)
+CREATE TABLE IF NOT EXISTS `academic_events` (
+  `event_id`       INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `owner_user_id`  INT UNSIGNED NOT NULL,
+  `course_id`      INT UNSIGNED NULL DEFAULT NULL,
+  `group_id`       INT UNSIGNED NULL DEFAULT NULL,
+  `event_type`     ENUM('lecture','exam','meeting','task','other') NOT NULL DEFAULT 'other',
+  `title`          VARCHAR(200) NOT NULL,
+  `description`    TEXT NULL DEFAULT NULL,
+  `location`       VARCHAR(200) NULL DEFAULT NULL,
+  `start_at`       DATETIME NOT NULL,
+  `end_at`         DATETIME NULL DEFAULT NULL,
+  `all_day`        TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`event_id`),
+  KEY `idx_events_owner_start` (`owner_user_id`,`start_at`),
+  KEY `idx_events_group_start` (`group_id`,`start_at`),
+  KEY `idx_events_course_start` (`course_id`,`start_at`),
+  CONSTRAINT `fk_events_owner`  FOREIGN KEY (`owner_user_id`) REFERENCES `users`   (`user_id`)  ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_events_group`  FOREIGN KEY (`group_id`)      REFERENCES `groups`  (`group_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_events_course` FOREIGN KEY (`course_id`)     REFERENCES `courses` (`course_id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2) Support tickets
+CREATE TABLE IF NOT EXISTS `support_tickets` (
+  `ticket_id`   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `created_by`  INT UNSIGNED NOT NULL,
+  `subject`     VARCHAR(200) NOT NULL,
+  `status`      ENUM('open','pending','closed') NOT NULL DEFAULT 'open',
+  `priority`    ENUM('low','normal','high') NOT NULL DEFAULT 'normal',
+  `assigned_to` INT UNSIGNED NULL DEFAULT NULL,
+  `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `closed_at`   DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`ticket_id`),
+  KEY `idx_tickets_creator_status` (`created_by`,`status`),
+  KEY `idx_tickets_assigned` (`assigned_to`,`status`),
+  CONSTRAINT `fk_tickets_creator`  FOREIGN KEY (`created_by`)  REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_tickets_assigned` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`user_id`) ON DELETE SET NULL  ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `support_ticket_messages` (
+  `msg_id`     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ticket_id`  INT UNSIGNED NOT NULL,
+  `sender_id`  INT UNSIGNED NOT NULL,
+  `message`    TEXT NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`msg_id`),
+  KEY `idx_ticket_msgs_ticket` (`ticket_id`,`created_at`),
+  CONSTRAINT `fk_ticket_msgs_ticket` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets` (`ticket_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ticket_msgs_sender` FOREIGN KEY (`sender_id`) REFERENCES `users`           (`user_id`)   ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3) Search-related indexes (lightweight)
+-- Users: names + department
+SET @has_idx_users_name := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'idx_users_name'
+);
+SET @sql := IF(@has_idx_users_name = 0, 'ALTER TABLE `users` ADD KEY `idx_users_name` (`full_name`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_idx_users_dept := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'idx_users_dept'
+);
+SET @sql := IF(@has_idx_users_dept = 0, 'ALTER TABLE `users` ADD KEY `idx_users_dept` (`department`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Groups: names
+SET @has_idx_groups_name := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'groups' AND INDEX_NAME = 'idx_groups_name'
+);
+SET @sql := IF(@has_idx_groups_name = 0, 'ALTER TABLE `groups` ADD KEY `idx_groups_name` (`group_name`)', 'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
+-- ============================================================
+-- Migration 004 — Branding / Theme Settings
+-- Created: 2026-03-30
+-- Description: إضافة جدول إعدادات الهوية البصرية للمنصة
+-- ============================================================
+
+
+
+CREATE TABLE IF NOT EXISTS `branding_settings` (
+  `id`                    INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+  `platform_name`         VARCHAR(120)     NOT NULL DEFAULT 'Trusted Social Network Platform',
+  `platform_tagline`      VARCHAR(255)     NOT NULL DEFAULT 'منصة التواصل الأكاديمي الموثوقة',
+
+  -- ── الألوان ────────────────────────────────────────────────
+  `primary_color`         VARCHAR(9)       NOT NULL DEFAULT '#004D8C',
+  `secondary_color`       VARCHAR(9)       NOT NULL DEFAULT '#007786',
+  `accent_color`          VARCHAR(9)       NOT NULL DEFAULT '#00B4D8',
+  `background_color`      VARCHAR(9)       NOT NULL DEFAULT '#FFFFFF',
+  `text_color`            VARCHAR(9)       NOT NULL DEFAULT '#1E293B',
+  `button_primary_color`  VARCHAR(9)       NOT NULL DEFAULT '#004D8C',
+  `button_text_color`     VARCHAR(9)       NOT NULL DEFAULT '#FFFFFF',
+  `card_bg_color`         VARCHAR(9)       NOT NULL DEFAULT '#F8FAFC',
+  `input_bg_color`        VARCHAR(9)       NOT NULL DEFAULT '#FFFFFF',
+  `input_border_color`    VARCHAR(9)       NOT NULL DEFAULT '#CBD5E1',
+
+  -- ── الخط ───────────────────────────────────────────────────
+  `font_family`           VARCHAR(80)      NOT NULL DEFAULT 'Cairo',
+
+  -- ── الشعار ─────────────────────────────────────────────────
+  `logo_path`             VARCHAR(512)              DEFAULT NULL COMMENT 'مسار الشعار نسبة إلى جذر المشروع',
+
+  -- ── القالب النشط ───────────────────────────────────────────
+  `active_template_key`   VARCHAR(60)      NOT NULL DEFAULT 'deep_blue',
+
+  -- ── معلومات ───────────────────────────────────────────────
+  `updated_by`            INT UNSIGNED              DEFAULT NULL COMMENT 'user_id للمدير الذي آخر تعديل',
+  `updated_at`            DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'إعدادات الهوية البصرية للمنصة – صف واحد دائماً (id=1)';
+
+-- ── الصف الافتراضي (القالب: Deep Blue) ──────────────────────
+INSERT IGNORE INTO `branding_settings`
+  (`id`, `platform_name`, `platform_tagline`,
+   `primary_color`, `secondary_color`, `accent_color`,
+   `background_color`, `text_color`,
+   `button_primary_color`, `button_text_color`,
+   `card_bg_color`, `input_bg_color`, `input_border_color`,
+   `font_family`, `logo_path`, `active_template_key`)
+VALUES
+  (1, 'Trusted Social Network Platform', 'منصة التواصل الأكاديمي الموثوقة',
+   '#004D8C', '#007786', '#00B4D8',
+   '#FFFFFF', '#1E293B',
+   '#004D8C', '#FFFFFF',
+   '#F8FAFC', '#FFFFFF', '#CBD5E1',
+   'Cairo', NULL, 'deep_blue');
+
+
