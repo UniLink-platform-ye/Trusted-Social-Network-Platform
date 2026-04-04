@@ -11,8 +11,7 @@ declare(strict_types=1);
  * Service Account: firebase-adminsdk-fbsvc@trusted-social-platform.iam.gserviceaccount.com
  */
 
-define('FCM_PROJECT_ID',    'trusted-social-platform');
-define('FCM_SA_FILE',       __DIR__ . '/../../../mobile/trusted-social-platform-firebase-adminsdk-fbsvc-e40bbe1ca1.json');
+// الإعدادات معرفة في config/app.php (FCM_PROJECT_ID و FCM_SA_FILE)
 define('FCM_V1_ENDPOINT',   'https://fcm.googleapis.com/v1/projects/' . FCM_PROJECT_ID . '/messages:send');
 define('FCM_OAUTH_SCOPE',   'https://www.googleapis.com/auth/firebase.messaging');
 define('FCM_TOKEN_URL',     'https://oauth2.googleapis.com/token');

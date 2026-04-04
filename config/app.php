@@ -71,8 +71,8 @@ const JWT_SECRET = 'unilink_jwt_s3cr3t_2026_change_in_prod';
 const JWT_EXPIRY = 30 * 24 * 3600; // 30 يوماً بالثواني
 // ───────────────────────────────────────────────────────────────────────────
 
-// ── Firebase FCM — Push Notifications ─────────────────────────────────────
-// احصل على المفتاح من: Firebase Console → Project Settings → Cloud Messaging
-const FCM_SERVER_KEY = ''; // أضف المفتاح هنا بعد إنشاء Firebase project
-const FCM_API_URL = 'https://fcm.googleapis.com/fcm/send';
+// ── Firebase FCM — Push Notifications (HTTP v1) ───────────────────────────
+// تعتمد الطريقة الجديدة على ملف Service Account JSON
+const FCM_PROJECT_ID = 'trusted-social-platform';
+define('FCM_SA_FILE', __DIR__ . '/../../trusted-social-platform-firebase-adminsdk-fbsvc-e40bbe1ca1.json');
 // ───────────────────────────────────────────────────────────────────────────
